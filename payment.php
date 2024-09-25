@@ -1,46 +1,59 @@
 <?php
+/**
+ * payment_processor.php
+ *
+ * This file processes the submission of a payment form. It validates the input data,
+ * sanitizes it, and inserts the payment details into the payment_schedule database table.
+ * 
+ * If the required fields are not filled out correctly, an error message is displayed.
+ * Upon successful insertion of the data, the user is redirected to the home page.
+ */
+
 include 'db_connect.php'; // Include database connection file
 
+// Check if the request method is POST and the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     // Sanitize and validate inputs
-    $category_name = isset($_POST['category_name'])? trim($_POST['category_name']) : '';
-    $payment_amount = isset($_POST['payment_amount'])? floatval($_POST['payment_amount']) : 0;
-    $payment_date = isset($_POST['payment_date'])? $_POST['payment_date'] : '';
-    $payment_method = isset($_POST['payment_method'])? trim($_POST['payment_method']) : '';
-    $description = isset($_POST['description'])? trim($_POST['description']) : '';
+    $category_name = isset($_POST['category_name']) ? trim($_POST['category_name']) : ''; // Trim whitespace from category name
+    $payment_amount = isset($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0; // Convert payment amount to float
+    $payment_date = isset($_POST['payment_date']) ? $_POST['payment_date'] : ''; // Get payment date
+    $payment_method = isset($_POST['payment_method']) ? trim($_POST['payment_method']) : ''; // Trim whitespace from payment method
+    $description = isset($_POST['description']) ? trim($_POST['description']) : ''; // Trim whitespace from description
 
     // Validate input formats (you may need to adjust based on your requirements)
     if (empty($category_name) || $payment_amount <= 0 || empty($payment_date) || empty($payment_method)) {
-        echo "Please fill in all required fields.";
-        exit;
+        echo "Please fill in all required fields."; // Notify user of missing fields
+        exit; // Stop further execution
     }
 
-    // Prepare and execute SQL statement to insert into payment_schedule table
+    // Prepare SQL statement to insert data into payment_schedule table
     $sql = "INSERT INTO payment_schedule (user_id, category_id, payment_date, payment_amount, payment_method, description) VALUES (?,?,?,?,?,?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        echo "Error preparing statement: ". $conn->error;
-        exit;
+        echo "Error preparing statement: " . $conn->error; // Log error if statement preparation fails
+        exit; // Stop further execution
     }
 
     // For demo purposes, let's assume user_id and category_id are static values
     $user_id = 1; // Replace with actual user_id from your session or form data
     $category_id = 1; // Replace with actual category_id from your session or form data
 
+    // Bind parameters to the prepared statement
     $stmt->bind_param("iissds", $user_id, $category_id, $payment_date, $payment_amount, $payment_method, $description);
 
+    // Execute the statement and check for success
     if ($stmt->execute()) {
         // Redirect to success page or back to the form page
-        header("Location: home.php");
-        exit;
+        header("Location: home.php"); // Redirect to home page on success
+        exit; // Stop further execution
     } else {
-        echo "Error: ". $sql. "<br>". $conn->error;
+        echo "Error: " . $sql . "<br>" . $conn->error; // Display error message on failure
     }
 
-    $stmt->close();
-    $conn->close();
+    $stmt->close(); // Close the statement
+    $conn->close(); // Close the database connection
 } else {
-    echo "Fill in all the fields";
+    echo "Fill in all the fields"; // Prompt user to fill in all fields if form not submitted correctly
 }
 ?>
 
