@@ -1,55 +1,78 @@
 <?php
+/**
+ * SmartSpend Budget Management System - Expense Form and Chart Page
+ * 
+ * This page handles the submission of an expense form, processes the data,
+ * saves it into the database, and displays a pie chart of the expense 
+ * distribution by category. It also handles form validation and sanitization
+ * before inserting the data into the database.
+ * 
+ * Author: Dennis Makaka
+ * Date: September 2024
+ */
+
+// Start session to manage user data (if needed)
 session_start();
+// Set error reporting to display all errors
 error_reporting(E_ALL);
 
-// Database connection settings
-$db_host = '127.0.0.1'; // or 'localhost'
-$db_username = 'root';
-$db_password = 'SoccerCiTy'; // Update with your actual database password
-$db_name = 'smartspenddb';
-$db_port = 3306; // Update with your actual database port number
+// Database connection configuration
+$db_host = '127.0.0.1';  // Database host (could be 'localhost')
+$db_username = 'root';  // Database username
+$db_password = 'SoccerCiTy';  // Database password (update with actual credentials)
+$db_name = 'smartspenddb';  // Name of the database
+$db_port = 3306;  // Database port number (update if different from the default)
 
-// Create connection
+// Create connection to the MySQL database using the provided credentials
 $conn = new mysqli($db_host, $db_username, $db_password, $db_name, $db_port);
 
-// Check connection
+// Check if the connection was successful
 if ($conn->connect_error) {
+    // Terminate script and display error message if connection fails
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Process expense form submission
+// Handle form submission to add a new expense
 if (isset($_POST['submit'])) {
+    // Sanitize form inputs to prevent SQL injection and XSS
     $expense_category = filter_var($_POST['expense_category'], FILTER_SANITIZE_STRING);
     $expense_amount = filter_var($_POST['expense_amount'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     $expense_date = filter_var($_POST['expense_date'], FILTER_SANITIZE_STRING);
     $expense_description = filter_var($_POST['expense_description'], FILTER_SANITIZE_STRING);
 
-    // Insert data into database
+    // Prepare SQL statement to insert sanitized form data into the database
     $stmt = $conn->prepare("INSERT INTO expenses (Category, Amount, Date, Description) VALUES (?, ?, ?, ?)");
     if (!$stmt) {
+        // Display error if statement preparation fails
         echo "Error preparing statement: " . $conn->error;
         exit;
     }
+
+    // Bind parameters to the SQL query and execute the statement
     $stmt->bind_param("ssss", $expense_category, $expense_amount, $expense_date, $expense_description);
     $stmt->execute();
     $stmt->close();
 
-    // Redirect to home page after successful form submission
+    // Redirect the user to the expenses page after successful form submission
     header("Location: expenses.php");
     exit;
 }
 
-// Fetch expenses data for chart
+// Fetch expenses data grouped by category to display in a chart
 $expenses_data = [];
 $result = $conn->query("SELECT Category, SUM(Amount) as TotalAmount FROM expenses GROUP BY Category");
 
+// Populate expenses data array if the query returns any results
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $expenses_data[] = $row;
     }
 }
+
+// Close the database connection after all operations are complete
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
