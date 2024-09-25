@@ -1,18 +1,35 @@
 <?php
+/**
+ * session_manager.php
+ *
+ * This file handles user session management, including checking if a user is logged in
+ * and providing functionality for logging out.
+ * 
+ * If a user is not logged in, they will be redirected to the login page.
+ * If the logout request is made, the session will be destroyed and the user will 
+ * be redirected to the login page.
+ */
+
+// Start a session to manage user authentication
 session_start();
 
+// Check if the user is logged in by verifying the presence of user_id and email in the session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['email'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
-    exit;
+    // Redirect to login page if the user is not logged in
+    header("Location: login.php"); 
+    exit; // Ensure no further code is executed after the redirect
 }
 
-// Logout functionality
+// Logout functionality: checks if the logout button was pressed
 if (isset($_POST['logout'])) {
+    // Destroy the session to log the user out
     session_destroy();
+    // Redirect to the login page after logging out
     header("Location: login.php");
-    exit;
+    exit; // Ensure no further code is executed after the redirect
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
