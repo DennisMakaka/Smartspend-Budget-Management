@@ -1,4 +1,13 @@
 <?php
+/**
+ * upcoming_payments.php
+ *
+ * This script fetches upcoming payments from the database that are due today or in the future.
+ * It establishes a database connection, executes a SQL query to retrieve payment details,
+ * and stores the results in an array for further processing. The results are sorted by
+ * payment date in ascending order.
+ */
+
 include 'db_connect.php'; // Include database connection
 
 session_start();
@@ -28,7 +37,6 @@ if ($result->num_rows > 0) {
 $stmt->close();
 $conn->close();
 ?>
-
 
 
 <!DOCTYPE html>
