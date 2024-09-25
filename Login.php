@@ -1,6 +1,17 @@
 <?php
-session_start();
-error_reporting(E_ALL);
+/**
+ * login_processor.php
+ *
+ * This file handles the user login process, including validating user credentials
+ * against the database and managing user sessions upon successful login.
+ * 
+ * It checks for a valid email and password, and if the credentials are correct,
+ * it initializes a session and redirects the user to the home page. If the login 
+ * attempt fails, an error message is displayed.
+ */
+
+session_start(); // Start the session to manage user login
+error_reporting(E_ALL); // Enable error reporting for all types of errors
 
 // Database connection settings
 $db_host = '127.0.0.1'; // or 'localhost'
@@ -14,44 +25,46 @@ $conn = new mysqli($db_host, $db_username, $db_password, $db_name, $db_port);
 
 // Check connection
 if ($conn->connect_error) {
-    error_log("Connection failed: ". $conn->connect_error);
+    error_log("Connection failed: " . $conn->connect_error); // Log the error
     header("Location: error.php"); // Redirect to error page
-    exit;
+    exit; // Stop further execution
 }
 
 // Process login form submission
 if (isset($_POST['login'])) {
-    $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
-    $password = $_POST['password'];
+    $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL); // Validate email format
+    $password = $_POST['password']; // Get the entered password
 
-    // Check if email exists
-    $stmt = $conn->prepare("SELECT Password, UserId FROM user WHERE Email =?");
+    // Check if email exists in the database
+    $stmt = $conn->prepare("SELECT Password, UserId FROM user WHERE Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
+
+    // Validate the user's credentials
     if ($result->num_rows === 0) {
-        echo "Invalid email or password";
-        exit;
+        echo "Invalid email or password"; // Inform the user of invalid credentials
+        exit; // Stop further execution
     }
 
-    $user_data = $result->fetch_assoc();
-    $hashed_password = $user_data['Password'];
-    $user_id = $user_data['UserId'];
+    $user_data = $result->fetch_assoc(); // Fetch user data from the result
+    $hashed_password = $user_data['Password']; // Get the hashed password
+    $user_id = $user_data['UserId']; // Get the user ID
 
-    // Verify password
+    // Verify the entered password against the hashed password
     if (password_verify($password, $hashed_password)) {
         // Login successful, start session
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['email'] = $email;
+        $_SESSION['user_id'] = $user_id; // Store user ID in session
+        $_SESSION['email'] = $email; // Store email in session
         header("Location: home.php"); // Redirect to home page
-        exit;
+        exit; // Stop further execution
     } else {
-        echo "Invalid email or password";
-        exit;
+        echo "Invalid email or password"; // Inform the user of invalid credentials
+        exit; // Stop further execution
     }
 }
-
 ?>
+
 
 
 <!DOCTYPE html>
