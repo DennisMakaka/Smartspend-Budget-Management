@@ -1,47 +1,61 @@
-<?php
-session_start();
-error_reporting(E_ALL);
+/**
+ * income_processor.php
+ *
+ * This file handles the processing of income submissions from the user.
+ *
+ * It checks if the user is logged in, establishes a database connection,
+ * and processes the income form submission by sanitizing the input data
+ * and inserting it into the income database table.
+ *
+ * If the user is not logged in, they will be redirected to the login page.
+ * If the database connection fails, the user will be redirected to an error page.
+ * After successfully processing the income submission, the user will be redirected to the home page.
+ */
 
-// Check if user is logged in
+session_start(); // Start the session to manage user authentication
+error_reporting(E_ALL); // Enable error reporting for all types of errors
+
+// Check if the user is logged in
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['email'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
-    exit;
+    header("Location: login.php"); // Redirect to the login page if the user is not logged in
+    exit; // Stop script execution
 }
 
 // Database connection settings
-$db_host = '127.0.0.1'; // or 'localhost'
-$db_username = 'root';
-$db_password = 'SoccerCiTy'; // Update with your actual database password
-$db_name = 'smartspenddb';
-$db_port = 3306; // Update with your actual database port number
+$db_host = '127.0.0.1'; // Database host (IP address or localhost)
+$db_username = 'root'; // Database username
+$db_password = 'SoccerCiTy'; // Database password (update with your actual password)
+$db_name = 'smartspenddb'; // Database name
+$db_port = 3306; // Database port (default is 3306 for MySQL)
 
-// Create connection
+// Create a new MySQLi connection
 $conn = new mysqli($db_host, $db_username, $db_password, $db_name, $db_port);
 
-// Check connection
+// Check the connection status
 if ($conn->connect_error) {
-    error_log("Connection failed: ". $conn->connect_error);
-    header("Location: error.php"); // Redirect to error page
-    exit;
+    error_log("Connection failed: " . $conn->connect_error); // Log connection error for debugging
+    header("Location: error.php"); // Redirect to the error page if the connection fails
+    exit; // Stop script execution
 }
 
-// Process income form submission
+// Process income form submission if the submit button is clicked
 if (isset($_POST['submit'])) {
-    $income_type = filter_var($_POST['income_type'], FILTER_SANITIZE_STRING);
-    $amount = filter_var($_POST['amount'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-    $date = filter_var($_POST['date'], FILTER_SANITIZE_STRING);
+    $income_type = filter_var($_POST['income_type'], FILTER_SANITIZE_STRING); // Sanitize income type input
+    $amount = filter_var($_POST['amount'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // Sanitize amount input
+    $date = filter_var($_POST['date'], FILTER_SANITIZE_STRING); // Sanitize date input
 
-    // Insert data into database
+    // Prepare the SQL statement to insert data into the income table
     $stmt = $conn->prepare("INSERT INTO income (UserId, IncomeType, Amount, Date) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $_SESSION['user_id'], $income_type, $amount, $date);
-    $stmt->execute();
+    $stmt->bind_param("isss", $_SESSION['user_id'], $income_type, $amount, $date); // Bind parameters for the SQL statement
+    $stmt->execute(); // Execute the prepared statement
 
-    // Redirect to home page
+    // Redirect to the home page after successful submission
     header("Location: home.php");
-    exit;
+    exit; // Stop script execution
 }
 
-?>
+$conn->close(); // Close the database connection
+
 
 <!DOCTYPE html>
 <html lang="en">
