@@ -1,8 +1,22 @@
 <?php
+/**
+ * This script handles the addition of an expense by the user.
+ * It connects to the database, processes form submissions, 
+ * and adds new expense records to the database.
+ * 
+ * PHP version 7.4
+ *
+ * @category Expense_Management
+ * @package  Expense_Tracker
+ * @author   Your Name
+ * @license  MIT License
+ * @link     http://example.com
+ */
+
 // Include the database connection file
 require_once 'db_connect.php';
 
-// Check if form is submitted
+// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Escape user inputs for security
     $user_id = $_POST['user_id'];
@@ -10,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $amount = $_POST['amount'];
     $date = $_POST['date'];
 
-    // Prepare INSERT statement
+    // Prepare the INSERT statement to add a new expense record
     $query = "INSERT INTO expenses (user_id, category_id, amount, date) VALUES (?, ?, ?, ?)";
     $stmt = $mysqli->prepare($query);
 
@@ -19,20 +33,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die('MySQL prepare error: ' . htmlspecialchars($mysqli->error));
     }
 
-    // Bind parameters and execute statement
+    // Bind parameters and execute the statement
     $stmt->bind_param("iiis", $user_id, $category_id, $amount, $date);
     
     if ($stmt->execute()) {
+        // Notify the user of successful expense addition
         echo "Expense added successfully.";
     } else {
+        // Output any error that occurred during execution
         echo "Error: " . htmlspecialchars($stmt->error);
     }
 
-    // Close statement
+    // Close the statement to free up resources
     $stmt->close();
 }
 
-// Close connection (added check for $mysqli existence)
+// Close the database connection if it exists
 if (isset($mysqli)) {
     $mysqli->close();
 }
@@ -46,6 +62,7 @@ if (isset($mysqli)) {
   <title>Add Expense</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* Styling for the body and container */
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f4f8;
@@ -108,14 +125,14 @@ if (isset($mysqli)) {
         <select id="category_id" name="category_id" required>
           <!-- PHP code to dynamically populate options -->
           <?php
-          // Fetch expense categories from database
+          // Fetch expense categories from the database
           $query = "SELECT category_id, category_name FROM expense_categories";
           $result = $mysqli->query($query);
 
           // Initialize an array to store category options
           $categoryOptions = array();
 
-          // Loop through result set and populate category options
+          // Loop through the result set and populate category options
           while ($row = $result->fetch_assoc()) {
               $categoryOptions[] = '<option value="' . $row['category_id'] . '">' . $row['category_name'] . '</option>';
           }
@@ -125,7 +142,7 @@ if (isset($mysqli)) {
               echo $option;
           }
 
-          // Close result set
+          // Close the result set
           $result->close();
           ?>
         </select>
@@ -145,3 +162,4 @@ if (isset($mysqli)) {
   </div>
 </body>
 </html>
+
