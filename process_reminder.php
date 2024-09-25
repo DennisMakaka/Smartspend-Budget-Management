@@ -1,4 +1,16 @@
 <?php
+/**
+ * reminder_sender.php
+ *
+ * This script connects to the database and retrieves pending payment reminders for the current date.
+ * It sends email notifications to users about their due payments and updates the reminder status
+ * in the database to indicate that the reminder has been sent.
+ * 
+ * Functions included:
+ * - sendReminders: Retrieves pending reminders and sends email notifications.
+ * - getPaymentInfo: Retrieves payment details based on the payment ID.
+ * - getUserEmail: Retrieves the user's email address based on the user ID.
+ */
 
 // Establish database connection
 $conn = mysqli_connect("localhost", "root", "SoccerCiTy", "smartspenddb");
