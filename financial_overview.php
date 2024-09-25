@@ -1,65 +1,90 @@
 <?php
-// Include the database connection file
+/**
+ * Smartspend budet Management System
+ * 
+ * This script retrieves income and expense data from a database, 
+ * calculates various financial statistics including total income, 
+ * total expenses, average monthly income, average monthly expenses, 
+ * total budget, and budget utilization percentage.
+ *
+ * PHP version 7.4
+ *
+ * @category Financial
+ * @package  FinancialManagement
+ * @author   Dennis Makaka
+ * @license  MIT License
+  */
+
+// Include the database connection file to establish a connection to the database
 require_once 'db_connect.php';
 
-// Retrieve income data from income table
+/**
+ * Retrieve income data from the 'income' table.
+ *
+ * @return array $income_data An array containing all income records.
+ */
 $result_income = $conn->query("SELECT * FROM income");
-if (!$result_income) {
-    echo "Error: " . $conn->error;
-    exit;
-}
-$income_data = array();
-while ($row = $result_income->fetch_assoc()) {
-    $income_data[] = $row;
+if (!$result_income) { // Check for query execution errors
+    echo "Error: " . $conn->error; // Output error message
+    exit; // Stop execution if there is an error
 }
 
-// Retrieve expense data from expense table
+// Initialize an array to hold income data
+$income_data = array(); 
+while ($row = $result_income->fetch_assoc()) { // Fetch data row by row
+    $income_data[] = $row; // Append each income record to the array
+}
+
+/**
+ * Retrieve expense data from the 'expenses' table.
+ *
+ * @return array $expense_data An array containing all expense records.
+ */
 $result_expense = $conn->query("SELECT * FROM expenses");
-if (!$result_expense) {
-    echo "Error: " . $conn->error;
-    exit;
-}
-$expense_data = array();
-while ($row = $result_expense->fetch_assoc()) {
-    $expense_data[] = $row;
+if (!$result_expense) { // Check for query execution errors
+    echo "Error: " . $conn->error; // Output error message
+    exit; // Stop execution if there is an error
 }
 
-// Initialize variables
-$total_income = 0;
+// Initialize an array to hold expense data
+$expense_data = array(); 
+while ($row = $result_expense->fetch_assoc()) { // Fetch data row by row
+    $expense_data[] = $row; // Append each expense record to the array
+}
+
+// Initialize variables for total income and total expenses
+$total_income = 0; 
 $total_expenses = 0;
 
-// Calculate income statistics
+// Calculate total income from the income data
 foreach ($income_data as $income) {
-    $total_income += $income['Amount'];
-}
-if ($total_income > 0) {
-    $average_monthly_income = $total_income / 12;
-} else {
-    $average_monthly_income = 0;
+    $total_income += $income['Amount']; // Sum the amounts for total income
 }
 
-// Calculate expense statistics
+// Calculate average monthly income
+$average_monthly_income = ($total_income > 0) ? $total_income / 12 : 0; // Avoid division by zero
+
+// Calculate total expenses from the expense data
 foreach ($expense_data as $expense) {
-    $total_expenses += $expense['Amount'];
+    $total_expenses += $expense['Amount']; // Sum the amounts for total expenses
 }
-if ($total_expenses > 0) {
-    $average_monthly_expenses = $total_expenses / 12;
-} else {
-    $average_monthly_expenses = 0;
-}
+
+// Calculate average monthly expenses
+$average_monthly_expenses = ($total_expenses > 0) ? $total_expenses / 12 : 0; // Avoid division by zero
 
 // Calculate budget statistics
 if ($total_income > 0 && $total_expenses > 0) {
-    $total_budget = $total_income - $total_expenses;
-    $budget_utilization = ($total_expenses / $total_income) * 100;
+    $total_budget = $total_income - $total_expenses; // Calculate total budget
+    $budget_utilization = ($total_expenses / $total_income) * 100; // Calculate budget utilization percentage
 } else {
-    $total_budget = 0;
-    $budget_utilization = 0;
+    $total_budget = 0; // Set to 0 if income or expenses are zero
+    $budget_utilization = 0; // Set to 0 if income or expenses are zero
 }
 
-// Close database connection
+// Close the database connection to free up resources
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
